@@ -1,0 +1,91 @@
+package com.example.wear;
+
+import android.app.Activity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.support.wearable.view.WatchViewStub;
+import android.util.Log;
+import android.view.WindowManager;
+import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+public class MainActivity extends Activity implements SensorEventListener {
+
+    private static final String TAG = "MainActivity";
+    private TextView mTextViewStepCount;
+    private TextView mTextViewStepDetect;
+    private TextView mTextViewHeart;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        // Keep the Wear screen always on (for testing only!)
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
+        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
+            @Override
+            public void onLayoutInflated(WatchViewStub stub) {
+                mTextViewStepCount = (TextView) stub.findViewById(R.id.step_count);
+                mTextViewStepDetect = (TextView) stub.findViewById(R.id.step_detect);
+                mTextViewHeart = (TextView) stub.findViewById(R.id.heart);
+                getStepCount();
+            }
+        });
+    }
+
+double accelx0,accelx1,accely0,accely1,accelz0,accelz1,velx0,velx1,vely0,vely1,velz0,velz1,positionx0,positionx1,positiony0,positiony1,positionz0,positionz1;
+
+accelx1=0;accely1=0;accelz1=0;velx1=0;vely1=0;velz1=0;positionx1=;positiony1=;positionz1=;
+
+  
+        SensorManager mSensorManager = ((SensorManager)getSystemService(SENSOR_SERVICE));
+        
+        Sensor mLinearaccel = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+	
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        Log.d(TAG, "onAccuracyChanged - accuracy: " + accuracy);
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+           accelx0 = accelx1;
+            accely0 = accely1;
+            accelz0 = accelz1;
+
+            vely0 = vely1;
+            positionx0 = positionx1;
+            velx0 = velx1;
+            positiony0 = positiony1;
+            velz0 = velz1;
+            positionz0 = positionz1;
+            accelx1 = accelx1 + event.values[0]; //filtering routine for noise attenuation
+            accely1 = accely1 + event.values[1];
+            accelz1 = accelz1 + event.values[2];
+            count2++;
+            if (count2 != 50)
+                return;
+            count2 = 0;
+            accelx1 = accelx1 / 50;
+            accely1 = accely1 / 50;
+            accelz1 = accelz1 / 50;
+            velx1 = velx0 + accelx0 + ((accelx1 - accelx0) / 2);
+            positionx1 = positionx0 + velx0 + ((velx1 - velx0) / 2);
+            vely1 = vely0 + accely0 + ((accely1 - accely0) / 2);
+            positiony1 = positiony0 + vely0 + ((vely1 - vely0) / 2);
+            velz1 = velz0 + accelz0 + ((accelz1 - accelz0) / 2);
+            positionz1 = positionz0 + velx0 + ((velz1 - velz0) / 2);
+        }
+        else
+            Log.d(TAG, "Unknown sensor type");
+    }
+
+}
